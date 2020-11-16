@@ -27,6 +27,7 @@ marginYtop = round(0.65*marginYtotal);
 
 rotatedImage = imrotate(image, offsetAngle * 180 / pi, 'crop', 'bicubic');
 normalizedImage = rotatedImage(topmostEye-marginYtop:mouth(2)+marginYbot, leftEye(1)-marginX:rightEye(1)+marginX, :);
-
+% Use grayscale image for now, might use something else later
+normalizedImage = rgb2gray(normalizedImage);
 end
 
