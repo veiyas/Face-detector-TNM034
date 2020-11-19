@@ -15,10 +15,19 @@ mouth = round(mouth);
 % Size of scaled image
 scaleY = 400;
 scaleX = 300;
+% Find scale factor to normalize eye position
+targetEyesDist = 140; % This generally works well
+distBetweenEyes = rightEye(1) - leftEye(1);
+scaleFactor = targetEyesDist / distBetweenEyes;
+image = imresize(image, scaleFactor, 'bicubic');
+
+% Rescale all values
+leftEye = leftEye .* scaleFactor;
+rightEye = rightEye .* scaleFactor;
+mouth = mouth .* scaleFactor;
 
 topmostEye = min(leftEye(2), rightEye(2)); % Highest eye point
-distBetweenEyes = rightEye(1) - leftEye(1);
-distEyesMouth = round(mouth(2) - topmostEye);
+distEyesMouth = round((mouth(2) - topmostEye));
 marginX = round((scaleX - distBetweenEyes)/2);
 
 marginYtotal = scaleY - distEyesMouth;
