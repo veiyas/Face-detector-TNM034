@@ -22,9 +22,9 @@ scaleFactor = targetEyesDist / distBetweenEyes;
 image = imresize(image, scaleFactor, 'bicubic');
 
 % Rescale all values
-leftEye = leftEye .* scaleFactor;
-rightEye = rightEye .* scaleFactor;
-mouth = mouth .* scaleFactor;
+leftEye = round(leftEye .* scaleFactor);
+rightEye = round(rightEye .* scaleFactor);
+mouth = round(mouth .* scaleFactor);
 
 topmostEye = min(leftEye(2), rightEye(2)); % Highest eye point
 distEyesMouth = round((mouth(2) - topmostEye));
