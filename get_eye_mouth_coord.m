@@ -2,8 +2,7 @@ function [left_eye, right_eye, mouth] = get_eye_mouth_coord(img)
 %Input image is the original RGB-image
 
 eyePic = eyeMap(img);
-YCBCR_im = rgb2ycbcr(img);
-mouthPic = mouthMap(YCBCR_im);
+mouthPic = mouthMap(img);
 
 mouthPic = imadjust(mouthPic,stretchlim(mouthPic),[]);
 mouthPic = uint8(rescale(mouthPic,0,255));
