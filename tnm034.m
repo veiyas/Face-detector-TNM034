@@ -10,6 +10,23 @@ function id = tnm034(im)
 % Your program code.
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
+threshold = 1e-12;
+
+% DB.mat should be precomputed to avoid extra caclulations
+load DB.mat
+
+% Should no detected faces be handled?
+normalizedImg = im2double(normalizeFace(im));
+imageVector = normalizedImg(:);
+
+[idOfClosest, residualNorm] = findClosest(imageVector, DB);
+
+if residualNorm < threshold
+    id = idOfClosest;
+else
+    id = 0; % No face is close enough
+end
+
 end
 
 % TO BE (RE?)MOVED
