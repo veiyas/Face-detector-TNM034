@@ -2,21 +2,9 @@
 clear
 format compact
 
-% Prepare training data
 [images, numImages] = loadImages('DB1');
-normalizedImages = cell(1, numImages);
-for k = 1:numImages
-    normalizedImages{k} = im2double(normalizeFace(images{k}));
-end
-imgSize = size(normalizedImages{1});
-imageVectors = zeros(imgSize(1) * imgSize(2), numImages);
-for k = 1:numImages
-    imageVectors(:,k) = normalizedImages{k}(:);
-end
-
-% Calculate DB
 dimensions = 15; % The number of dimensions in face space
-DB = buildDB(imageVectors, dimensions);
+DB = buildDB(images, dimensions);
 
 save DB.mat DB
 
