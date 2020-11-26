@@ -33,15 +33,15 @@ CbCr = normCbCr.*255;
 eyeMapC = (1/3) * (Cb2 + nCr2 + CbCr);
 
 %Enhance chroma eye map by histogram equalization
-eyeMapC = histeq(uint8(eyeMapC));
+eyeMapC = histeq(eyeMapC);
 
 %Constructing EyeMapL (Luminance components)
 %We can use morphological operators such as dilation and erosion to
 %emphasize brighter and darker pixels in the luma component around eyes.
 
 %Construct a structuring element for dilation and erosion
-radius1 = 4;
-SE1 = strel('disk', radius1);
+size = 8;
+SE1 = strel('disk', size);
 
 dilation = imdilate(Y,SE1);
 erosion = imerode(Y,SE1);
@@ -49,10 +49,14 @@ erosion = imerode(Y,SE1);
 eyeMapL = dilation./(erosion+1);
 
 %Combines eyeMap
-combEyeMap = imfuse(eyeMapL, eyeMapC, 'blend');
+%combEyeMap = imfuse(eyeMapL, eyeMapC, 'blend');
+combEyeMap = eyeMapL.*eyeMapC;
 
-SE2 = strel('disk', 5);
+SE2 = strel('disk', 3);
 combEyeMap = imdilate(combEyeMap, SE2);
+
+combEyeMap = uint8(rescale(combEyeMap,0,255));
+
 
 
 

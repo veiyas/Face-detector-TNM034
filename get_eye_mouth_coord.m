@@ -7,7 +7,7 @@ mouthPic = mouthMap(img);
 mouthPic = imadjust(mouthPic,stretchlim(mouthPic),[]);
 mouthPic = uint8(rescale(mouthPic,0,255));
 
-onlyEyes = uint8(face_threshold(eyePic, 200));
+onlyEyes = uint8(face_threshold(eyePic, 230));
 onlyMouth = uint8(face_threshold(mouthPic, 200)); 
 
 logicalMouth = logical(onlyMouth);
