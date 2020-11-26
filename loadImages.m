@@ -1,6 +1,6 @@
 function [images, numImages] = loadImages(dataSet)
 %LOADIMAGES Returns a cell array containing the images
-%   dataSet is a string
+%   dataSet is a string used as some kind of enum
 
 if strcmp(dataSet, 'DB1')
     jpegFiles = dir('data/DB1/*.jpg');

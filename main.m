@@ -22,18 +22,15 @@ save DB.mat DB
 
 %% Test tnm034(im)
 
-% For now the training data is used unmodified
-% TODO apply rotations and so on...
-knownFacesIdentificationResults = zeros(numImages,1);
-for i = 1:numImages
-    knownFacesIdentificationResults(i) = tnm034(images{i});
-end
+disp('Results with unmodified training images (DB1)');
+testWithNonmodifiedImages(images, numImages)
+disp(' ');
 
-knownFacesCorrectResults = (1:numImages)'; % Not the most robust...
-numCorrectIds = nnz(...
-    knownFacesIdentificationResults == knownFacesCorrectResults);
+% TODO This crashes eye detection
+% disp('Results with modified training images (DB1)');
+% testWithModifiedImages(images, numImages);
+% disp(' ');
 
-correctToTotalRatio = numCorrectIds / numImages
 
 % DOES NOT WORK RIGHT NOW, eyeCoords in get_eye_m... gets empty,
 % not sure why atm
@@ -49,4 +46,58 @@ correctToTotalRatio = numCorrectIds / numImages
 % end
 % 
 % numOfUnknownIdentifiedFaces
+%% Local functions
+
+% Dont necessarily work for anything other than DB1
+function testWithNonmodifiedImages(images, numImages)
+    knownFacesIdentificationResults = zeros(numImages,1);
+    
+    for i = 1:numImages
+        knownFacesIdentificationResults(i) = tnm034(images{i});
+    end
+
+    knownFacesCorrectResults = (1:numImages)'; % Not the most robust...
+    numCorrectIds = nnz(...
+        knownFacesIdentificationResults == knownFacesCorrectResults);
+
+    correctToTotalRatio = numCorrectIds / numImages;
+    fprintf('\tCorrect to total ratio:\t%f\n', correctToTotalRatio);
+end
+
+% Dont necessarily work for anything other than DB1
+function testWithModifiedImages(images, numImages)
+    totNumImages = 0;
+    numCorrIds = 0;
+    for i = 1:numImages
+        modifiedImages = createModifiedImages(images{i});
+        numModImages = length(modifiedImages);
+        totNumImages = totNumImages + numModImages;
+        for k = 1:numModImages
+            if tnm034(modifiedImages{k}) == i % correct
+                numCorrIds = numCorrIds + 1;
+            end
+        end
+    end
+
+    correctToTotalRatio = numCorrIds / totNumImages;
+    fprintf('\tCorrect to total ratio:\t%f\n', correctToTotalRatio);
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
