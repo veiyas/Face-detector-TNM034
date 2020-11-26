@@ -3,17 +3,14 @@ clear
 format compact
 
 % Prepare training data
-jpegFiles = dir('data/DB1/*.jpg'); 
-numFiles = length(jpegFiles);
-images = cell(1, numFiles);
-normalizedImages = cell(1, numFiles);
-for k = 1:numFiles 
-    images{k} = imread(['data/DB1/' jpegFiles(k).name]);
+[images, numImages] = loadImages('DB1');
+normalizedImages = cell(1, numImages);
+for k = 1:numImages
     normalizedImages{k} = im2double(normalizeFace(images{k}));
 end
 imgSize = size(normalizedImages{1});
-imageVectors = zeros(imgSize(1) * imgSize(2), numFiles);
-for k = 1:numFiles 
+imageVectors = zeros(imgSize(1) * imgSize(2), numImages);
+for k = 1:numImages
     imageVectors(:,k) = normalizedImages{k}(:);
 end
 
@@ -27,16 +24,16 @@ save DB.mat DB
 
 % For now the training data is used unmodified
 % TODO apply rotations and so on...
-knownFacesIdentificationResults = zeros(numFiles,1);
-for i = 1:numFiles
+knownFacesIdentificationResults = zeros(numImages,1);
+for i = 1:numImages
     knownFacesIdentificationResults(i) = tnm034(images{i});
 end
 
-knownFacesCorrectResults = (1:numFiles)'; % Not the most robust...
+knownFacesCorrectResults = (1:numImages)'; % Not the most robust...
 numCorrectIds = nnz(...
     knownFacesIdentificationResults == knownFacesCorrectResults);
 
-correctToTotalRatio = numCorrectIds / numFiles
+correctToTotalRatio = numCorrectIds / numImages
 
 % DOES NOT WORK RIGHT NOW, eyeCoords in get_eye_m... gets empty,
 % not sure why atm
