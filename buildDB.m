@@ -1,10 +1,24 @@
-function DB = buildDB(imageVectors, dimensions)
-%BUILDDB Returns DB created from array of normalized images in vector form
+function DB = buildDB(images, dimensions)
+%BUILDDB Returns DB created from images
 
+%% Prepare training data
+numImages = length(images);
+normalizedImages = cell(1, numImages);
+for k = 1:numImages
+    normalizedImages{k} = im2double(normalizeFace(images{k}));
+end
+imgSize = size(normalizedImages{1});
+imageVectors = zeros(imgSize(1) * imgSize(2), numImages);
+for k = 1:numImages
+    imageVectors(:,k) = normalizedImages{k}(:);
+end
+
+%% Be helpful :)
 if dimensions > size(imageVectors, 2)
     error('Dimensions > number of images');
 end
 
+%% Dimensionality reduction
 meanFace = mean(imageVectors, 2);
 faceDiff = imageVectors - meanFace;
 
