@@ -1,14 +1,17 @@
 function [left_eye, right_eye, mouth] = get_eye_mouth_coord(img)
 %Input image is the original RGB-image
 
+eyeThresh = 205;
+mouthThresh = 200;
+
 eyePic = eyeMap(img);
 mouthPic = mouthMap(img);
 
 mouthPic = imadjust(mouthPic,stretchlim(mouthPic),[]);
 mouthPic = uint8(rescale(mouthPic,0,255));
 
-onlyEyes = uint8(face_threshold(eyePic, 230));
-onlyMouth = uint8(face_threshold(mouthPic, 200)); 
+onlyEyes = uint8(face_threshold(eyePic, eyeThresh));
+onlyMouth = uint8(face_threshold(mouthPic, mouthThresh)); 
 
 logicalMouth = logical(onlyMouth);
 logicalMouth = bwareafilt(logicalMouth,1);

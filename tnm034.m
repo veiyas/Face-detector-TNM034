@@ -10,7 +10,8 @@ function id = tnm034(im)
 % Your program code.
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-threshold = 1e-12;
+% threshold = 1e-10;
+threshold = 10;
 
 % DB.mat should be precomputed to avoid extra caclulations
 load DB.mat
