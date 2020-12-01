@@ -1,7 +1,7 @@
-function [left_eye, right_eye, mouth] = get_eye_mouth_coord(img)
+function [left_eye, right_eye, mouth, numberOfEyes] = get_eye_mouth_coord(img)
 %Input image is the original RGB-image
 
-eyeThresh = 205;
+eyeThresh = 220;
 mouthThresh = 200;
 
 eyePic = eyeMap(img);
@@ -32,9 +32,30 @@ logicalEyes = bwareafilt(logicalEyes,2); %selects 2 largest objects
 s = regionprops(logicalEyes, 'centroid');
 eyeCoords = cat(1,s.Centroid); %Vector containg left and right eye position
 
+[r1,c1] = size(eyeCoords);
+[r2,c2] = size(mouthCoord);
 
-left_eye = eyeCoords(1,:);
-right_eye = eyeCoords(2,:);
-mouth = mouthCoord;
+%If 2 Eyes and a mouth is found
+if(r1 == 2 & r2 == 1) 
+    numberOfEyes = 2;
+    left_eye = eyeCoords(1,:);
+    right_eye = eyeCoords(2,:);
+    mouth = mouthCoord;
+    
+%If only one eye is found, dont return eye or mouth position
+%and set number of eyes to 1.
+else
+    left_eye = []; 
+    right_eye = [];
+    mouth = [];    
+    if(r1 == 1)     %If only one eye is found
+        numberOfEyes = 1;
+    else            %If no eyes are found
+        numberOfEyes = 0;
+    end
+end
+
+end
+
 
 
