@@ -40,7 +40,7 @@ eyeMapC = histeq(eyeMapC);
 %emphasize brighter and darker pixels in the luma component around eyes.
 
 %Construct a structuring element for dilation and erosion
-size = 8;
+size = 5;
 SE1 = strel('disk', size);
 
 dilation = imdilate(Y,SE1);
