@@ -26,23 +26,67 @@ end
 
 % Construct skin color boundary in YCbCr space
 % Not used atm, can perhaps use the elliptical model instead
-skinToneCB = [85 100 110 130 122 108 108 98 85];
-skinToneCR = [160 140 125 138 150 158 162 175 160];
+skinToneCBorig = [85 100 110 130 122 108 108 98 85];
+skinToneCRorig = [160 140 125 138 150 158 162 175 160];
+
+p = polyshape(skinToneCBorig, skinToneCRorig);
+[xc_P, yc_P] = centroid(p);
+shrinkFactor = 0.55;
+scaledPoly = scale(p, shrinkFactor, [xc_P yc_P]);
 
 YCbCr=rgb2ycbcr(gwIM);
-% DO NON LINEAR TRANSFORMATION OF THE YCBCR COLOR SPACE HERE
+Kl = 125;
+Kh = 188;
+WCb = 46.97;
+WCr = 38.76;
+
+NLYCbCr = zeros(imSize(1), imSize(2), imSize(3));
+NLYCbCr = uint8(NLYCbCr);
+NLYCbCr(:,:,1) = YCbCr(:,:,1);
+for i = 1:imSize(1)
+    for j = 1:imSize(2)
+        Y = YCbCr(i,j,1);
+        
+        if Y < Kl || Kh < Y
+            [CbC, CrC] = Ci_centers(Y); % Centers
+            [CbCK, CrCK] = Ci_centers(Kh); % Centers with Kh as input
+            [CbW, CrW] = Ci_weights(Y); % Weights
+            NLCb = (Y - CbC)*(WCb / CbW) + CbCK;
+            NLCr = (Y - CrC)*(WCr / CrW) + CrCK;
+            NLYCbCr(i,j,2) = uint8(NLCb);
+            NLYCbCr(i,j,3) = uint8(NLCr);
+        else
+            NLYCbCr(i,j,2) = YCbCr(i,j,2);
+            NLYCbCr(i,j,3) = YCbCr(i,j,3);
+        end
+    end
+end
+
+% Elliptical skin tone boundary
+theta = 2.53;
+t = 1:1:256;
+cx = 109.38;
+cy = 152.02;
+cossinMatrix = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+CbCrVec = [t - cx; t - cy];
+res = cossinMatrix * CbCrVec;
+
+% subplot(1,2,1)
+% imshow(YCbCr);
+% subplot(1,2,2)
+% imshow(NLYCbCr);
 
 % Construct mask
 mask = zeros(imSize(1), imSize(2));
 for j = 1:imSize(1)
     for k = 1:imSize(2)
-        tempCb = double(YCbCr(j,k,2));
-        tempCr = double(YCbCr(j,k,3));        
+        tempCb = double(NLYCbCr(j,k,2));
+        tempCr = double(NLYCbCr(j,k,3));        
         
-%         if inpolygon(tempCb, tempCr, skinToneCB, skinToneCR)
+%         if isinterior(scaledPoly, tempCb, tempCr)
 %             mask(j,k) = 1;
 %         end
-        if (tempCr > 130 && tempCr < 160 && tempCb > 80 && tempCb < 145)
+        if (tempCr > 135 && tempCr < 150 && tempCb > 110 && tempCb < 146)
             mask(j,k) = 1;
         end
     end
@@ -54,24 +98,17 @@ dotRemover = strel('disk', 4);
 tallObjectRemover = strel('line', 50, 0);
 wideObjectRemover = strel('line', 50, 90);
 openedMask = imopen(mask, dotRemover);
-openedMask = imopen(openedMask, tallObjectRemover);
-openedMask = imopen(openedMask, wideObjectRemover);
+% openedMask = imopen(openedMask, tallObjectRemover);
+% openedMask = imopen(openedMask, wideObjectRemover);
 
 % Get image stats
-stats = regionprops(openedMask, 'BoundingBox', 'EulerNumber');
-bbRect = stats.BoundingBox;
-
-% Check if bounding box is too small (failure), set a big bounding box
-% This is a hack to aid testing
-if (bbRect(3)*bbRect(4)) / totPixels < 0.3 || (bbRect(3)*bbRect(4)) / totPixels > 0.9
-   centerX = round(imSize(2) / 2);
-   centerY = round(imSize(1) / 2);
-   lengthX = centerX / 2;
-   lengthY = centerY / 2;
-   bbRect = [centerX - lengthX centerY - lengthY centerX centerY];
+stats = regionprops(openedMask, 'BoundingBox');
+SizeOfFirstField = size(stats, 1);
+if SizeOfFirstField == 0
+    bbRect = [0 0 10 10];
+else
+    bbRect = stats.BoundingBox;
 end
-
-faceMask = bbRect;
 
 end
 
