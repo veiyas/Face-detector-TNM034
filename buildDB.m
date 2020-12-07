@@ -5,7 +5,13 @@ function DB = buildDB(images, dimensions)
 numImages = length(images);
 normalizedImages = cell(1, numImages);
 for k = 1:numImages
-    normalizedImages{k} = im2double(normalizeFace(images{k}));
+    [doesFaceExist, normalizedFace] = normalizeFace(images{k});
+    
+    if doesFaceExist == false
+        error('failed to find face in training image');
+    end
+    
+    normalizedImages{k} = im2double(normalizedFace);
 end
 imgSize = size(normalizedImages{1});
 imageVectors = zeros(imgSize(1) * imgSize(2), numImages);
