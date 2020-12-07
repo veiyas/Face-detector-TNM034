@@ -1,8 +1,14 @@
-function normalizedImage = normalizeFace(image)
+function [doesFaceExist, normalizedImage] = normalizeFace(image)
 %normalize Normalizes inputImage using eyecoords
 %   Rotate, scale and tone to normalize
 
-[leftEye, rightEye, mouth] = get_eye_mouth_coord(image);
+[leftEye, rightEye, mouth, numEyes] = get_eye_mouth_coord(image);
+doesFaceExist = numEyes == 2;
+
+if doesFaceExist == false
+    normalizedImage = [];
+    return
+end
 
 imageSize = [400, 300];
 fixedLeftEye = [100 100];

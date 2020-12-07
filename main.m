@@ -15,7 +15,6 @@ disp('Results with unmodified training images (DB1)');
 testWithNonmodifiedImages(images, numImages)
 disp(' ');
 
-% TODO This crashes eye detection
 disp('Results with modified training images (DB1)');
 testWithModifiedImages(images, numImages);
 disp(' ');
@@ -30,9 +29,9 @@ numFilesDB0 = length(jpegFilesDB0);
 numOfUnknownIdentifiedFaces = 0;
 for k = 1:numFilesDB0
     image = imread(['data/DB0/' jpegFilesDB0(k).name]);
-    if k == 4 || k == 1 % OOOOOBBS DETTA ÄR BARA FÖR ATT UNDVIKA KRASCH
-        continue;
-    end
+%     if k == 4 || k == 1 % OOOOOBBS DETTA ÄR BARA FÖR ATT UNDVIKA KRASCH
+%         continue;
+%     end
     
     if tnm034(image) ~= 0
         numOfUnknownIdentifiedFaces = numOfUnknownIdentifiedFaces + 1;

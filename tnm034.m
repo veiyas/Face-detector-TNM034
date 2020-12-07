@@ -17,8 +17,16 @@ threshold = 10;
 load DB.mat
 
 % Should no detected faces be handled?
-normalizedImg = im2double(normalizeFace(im));
+[doesFaceExist, normalizedImg] = normalizeFace(im);
+if doesFaceExist == false
+    id = 0;
+    return
+end
+normalizedImg = im2double(normalizedImg);
+
 imageVector = normalizedImg(:);
+
+%length(imageVector)
 
 [idOfClosest, residualNorm] = findClosest(imageVector, DB);
 
