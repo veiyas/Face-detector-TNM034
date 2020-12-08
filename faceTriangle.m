@@ -79,6 +79,10 @@ end
 if size(ple,1) == 1 && size(pre,1) == 1
     leftEyeCoord = ple;
     rightEyeCoord = pre;
+elseif size(ple,1) == 0 && size(pre,1) == 0
+    % Guesstimated triangle, is this allowed?
+    leftEyeCoord = mouthCoord - [100 100];
+    rightEyeCoord = mouthCoord - [-100 100];
 else 
     [~, maxAreaIndexLeft] = max(pleAreas);
     [~, maxAreaIndexRight] = max(preAreas);
