@@ -61,29 +61,20 @@ for i = 1:16
     end
     pathString = [pathBegin picIndexString pathEnd];
     IM = imread(pathString);
-    gwIM = grayworldcorrection(IM);
-    grayIM = im2double(rgb2gray(IM));
-    faceMask = getFaceMask(IM);
-    
-    maskedIM = im2double(IM) .* faceMask;
-    
+    [leftEyeCoord, rightEyeCoord, mouthCoord] = faceTriangle(IM);
     subplot(4,4,i);
-    imshow(grayIM .* faceMask);
+    imshow(IM);
     hold on;
-    
-    [left_eye, right_eye, mouth, numberOfEyes] = get_eye_mouth_coord(gwIM, faceMask);
-    if numberOfEyes == 2
-        plot(left_eye(1), left_eye(2), 'o');
-        plot(right_eye(1), right_eye(2), 'o');
-        plot(mouth(1), mouth(2), 'o');
-    end    
+    plot(mouthCoord(1), mouthCoord(2), '*');
+    plot(leftEyeCoord(1), leftEyeCoord(2), '*');
+    plot(rightEyeCoord(1), rightEyeCoord(2), '*');
 end
 
 %%
 load db2paths.mat;
 
 picIndex = 0;
-for i = 2:size(paths, 2)
+for i = 1:size(paths, 2)
     picIndex = picIndex + 1;
     if picIndex == 16
         picIndex = 1;
@@ -91,42 +82,13 @@ for i = 2:size(paths, 2)
     end
     currentPath = paths(i);
     IM = imread(currentPath);
-    grayIM = im2double(rgb2gray(IM));
-    mouthmap = mouthMap(IM);
-    
-    %Get all potential mouth candidates
-    mouthStats = regionprops('table', mouthmap, 'Centroid', 'BoundingBox', 'Area');
-    mouthCentroids = cat(1, mouthStats.Centroid);
-    mouthAreas = cat(1, mouthStats.Area);
-    mouthsDetected = size(mouthCentroids);
-    [imgHeight, imgWidth] = size(IM);
-
-% The region with the largest area is 99% the mouth
-% So we search for it with some extra filters as precaution
-    mouthCoord = [];
-    currArea = -1;
-    k = 1;
-    for j = 1:mouthsDetected
-        % The mouth should be wider than its height
-        if(mouthStats.BoundingBox(j,3) > mouthStats.BoundingBox(j,4))
-            % The mouth should not be in the upper part of the image
-            % Maybe even bottom half?
-            if(mouthCentroids(j,2) > imgHeight/2)
-                % The region needs to have a larger area
-                if (mouthAreas(j) > currArea)
-                    currArea = mouthAreas(j);
-                    mouthCoord = mouthCentroids(j,:);
-                    k = k+1;
-                end            
-            end
-        end
-    end
-    
-%     res = horzcat(grayIM, mm);
+    [leftEyeCoord, rightEyeCoord, mouthCoord] = faceTriangle(IM);
     subplot(4,4,picIndex);
     imshow(IM);
     hold on;
-    plot(mouthCoord(1), mouthCoord(2), 'x');
+    plot(mouthCoord(1), mouthCoord(2), '*');
+    plot(leftEyeCoord(1), leftEyeCoord(2), '*');
+    plot(rightEyeCoord(1), rightEyeCoord(2), '*');
 end
 
 
@@ -152,60 +114,37 @@ end
 
 %%
 clear;
-IM = imread('data/DB2/bl_01.jpg');
+IM = imread('data/DB2/ex_01.jpg');
 % IM = imread('data/DB1/db1_01.jpg');
+% [leftEyeCoord, rightEyeCoord, mouthCoord] = faceTriangle(IM);
+% imshow(IM);
+% hold on;
+% plot(mouthCoord(1), mouthCoord(2), 'x');
+% plot(leftEyeCoord(1), leftEyeCoord(2), 'o');
+% plot(rightEyeCoord(1), rightEyeCoord(2), 'o');
+
+
 gwIM = grayworldcorrection(IM);
-YCbCr = rgb2ycbcr(gwIM);
-faceMask = getFaceMask(gwIM);
 
 % Get image size
 [imgHeight, imgWidth] = size(gwIM);
 
 % Get mouth map and mouth coords
-mouthmap = mouthMap(IM);
+mouthmap = mouthMap(gwIM);
 mouthCoord = getMouthCoord(mouthmap);
 
-% Eye map stuff
-Y = im2double(YCbCr(:,:,1));
-Cb = im2double(YCbCr(:,:,2));
-Cr = im2double(YCbCr(:,:,3));
+eyeMapBinMorphed = eyeMap(gwIM);
 
-Cbsqr = Cb.^2;
-CbNegsqr = 1 - Cr.^2;
-CbCr = Cb ./ Cr;
-
-eyeMapC = (1/3)*(Cbsqr + CbNegsqr + CbCr);
-eyeMapC = histeq(eyeMapC);
-
-diskSize = 7;
-kernel = strel('disk', diskSize);
-
-nominator = imdilate(Y, kernel);
-denominator = imerode(Y, kernel);
-
-eyeMapL = nominator ./ (denominator + 1);
-
-eyeMap = eyeMapC .* eyeMapL;
-eyeMap = imdilate(eyeMap, kernel);
-eyeMap = eyeMap .* faceMask;
-eyeMap = im2uint8(eyeMap);
-eyeMapStretch = imadjust(eyeMap, stretchlim(eyeMap), []);
-eyeMapBin = eyeMapStretch > 250;
-
-closer = strel('disk', 5);
-denoiser = strel('disk', 4);
-vertLinesRemover = strel('line', 10, 0);
-
-eyeMapBinMorphed = imopen(eyeMapBin, denoiser);
-eyeMapBinMorphed = imopen(eyeMapBinMorphed, vertLinesRemover);
-eyeMapBinMorphed = imclose(eyeMapBinMorphed, closer);
-
-% Remove all data below the mouth
 eyeMapMouthFix = eyeMapBinMorphed;
-eyeMapMouthFix(mouthCoord(2)-30:imgHeight, :) = 0;
+% 
+% if isempty(mouthCoord)
+% else
+
+eyeMapMouthFix(round(mouthCoord(2))-30:imgHeight, :) = 0;
+
 
 % Get all potential eye candidates
-eyeStats = regionprops('table', eyeMapMouthFix, 'Centroid', 'BoundingBox', 'Area')
+eyeStats = regionprops('table', eyeMapMouthFix, 'Centroid', 'BoundingBox', 'Area');
 % Store all centroids in a vector
 eyeCentroids = cat(1,eyeStats.Centroid);
 eyeAreas = cat(1, eyeStats.Area);
@@ -213,24 +152,32 @@ eyesDetected = size(eyeCentroids);
 
 % Remove all eyes that does not fulfill certain attributes
 ple = []; % Potential left eyes
+pleArea = []; % Potenatial left eye areas
+pleAngle = [];
 l = 1; % Left eye counter
 pre = []; % Potential right eyes
+preArea = []; % Potenatial right eye areas
+preAngle = [];
 r = 1; % Right eye counter
 
-heightDiffTolerance = 50;
-areaDiffTolerance = 150;
-combo = []; % Stores each possible eye+mouth combo
+heightDiffTolerance = 30;
+areaDiffTolerance = 670;
+normDiffTolerance = 20;
+angleDiffTolerance = 18;
+smallestEyeMouthAngle = 12;
+largestEyeMouthAngle = 45;
+mouthNormal = [0 1];
 
 % Filter out candidates that are:
 %   Not on correct side of mouth
 %   Too far apart vertically
 %   Not in similar size
+%   Vector to mouth should be roughly same length
+%   Vector to mouth has similar angles to [0 1]
+%   Vector to mouth has reasonably large angle
 for i = 1:eyesDetected-1
     for j = i+1:eyesDetected
-%         tmpEye1 = ;
         tmpEyeArea1 = eyeAreas(i);
-        
-%         tmpEye2 = ;
         tmpEyeArea2 = eyeAreas(j);
         
         tmpEyeMtrx = [eyeCentroids(i,:); eyeCentroids(j,:)];
@@ -241,33 +188,83 @@ for i = 1:eyesDetected-1
         tmpLeftEye = tmpEyeMtrx(leftEyeIndex(1),:);
         tmpRightEye = tmpEyeMtrx(rightEyeIndex(1),:);
         
-        if tmpLeftEye(1) < mouthCoord(1) && mouthCoord(1) < tmpRightEye(1) % Right sides of mouth
-            if tmpLeftEye(2) < mouthCoord(2) && tmpRightEye(2) < mouthCoord(2) % Above mouth
-                if abs(tmpLeftEye(1,2) - tmpRightEye(1,2)) < heightDiffTolerance
-                    if abs(tmpEyeArea1 - tmpEyeArea2) < areaDiffTolerance
-                        ple(l,:) = tmpLeftEye;
-                        l = l+1;
-                        pre(r,:) = tmpRightEye;
-                        r = r+1;
-                    end
-                end
-            end
+        leftEyeMouthVec = mouthCoord - tmpLeftEye;
+        leftEyeMouthNorm = norm(leftEyeMouthVec);
+        leftEyeMouthAngle = acosd(dot(leftEyeMouthVec, mouthNormal) /leftEyeMouthNorm);
+        
+        rightEyeMouthVec = mouthCoord - tmpRightEye;
+        rightEyeMouthNorm = norm(rightEyeMouthVec);
+        rightEyeMouthAngle = acosd(dot(rightEyeMouthVec, mouthNormal) /rightEyeMouthNorm);
+        
+        % Filters
+        correctSides = tmpLeftEye(1) < mouthCoord(1) && mouthCoord(1) < tmpRightEye(1);
+        belowMouth = tmpLeftEye(2) < mouthCoord(2) && tmpRightEye(2) < mouthCoord(2);
+        smallVertDiff = abs(tmpLeftEye(1,2) - tmpRightEye(1,2)) < heightDiffTolerance;
+        smallAreaDiff = abs(tmpEyeArea1 - tmpEyeArea2) < areaDiffTolerance;
+        smallMouthNormDiff = abs(leftEyeMouthNorm - rightEyeMouthNorm) < normDiffTolerance;
+        smallEyeMouthAngleDiff = abs(leftEyeMouthAngle - rightEyeMouthAngle) < angleDiffTolerance;
+        reasonableAngle = leftEyeMouthAngle > smallestEyeMouthAngle && rightEyeMouthAngle > smallestEyeMouthAngle;
+        reasonableAngle = reasonableAngle && leftEyeMouthAngle < largestEyeMouthAngle && rightEyeMouthAngle < largestEyeMouthAngle;
+        
+        if correctSides && belowMouth && smallVertDiff && smallMouthNormDiff && smallEyeMouthAngleDiff && smallAreaDiff && reasonableAngle
+%             leftEyeMouthVec
+%             rightEyeMouthVec
+%             leftEyeMouthAngle
+%             rightEyeMouthAngle
+            ple(l,:) = tmpLeftEye;
+            pleAreas(l) = tmpEyeArea1;
+            pleAngle(l) = leftEyeMouthAngle;
+            l = l+1;
+            pre(r,:) = tmpRightEye;
+            preAreas(r) = tmpEyeArea2;
+            preAngle(r) = rightEyeMouthAngle;
+            r = r+1;
         end
     end
 end
-ple
-pre
+% If we only have 1 candidate left its probably correct
+if size(ple,1) == 1 && size(pre,1) == 1
+    leftEyeCoord = ple;
+    rightEyeCoord = pre;
+elseif size(ple,1) == 0 && size(pre,1) == 0 % Guesstimated triangle, is this allowed?
+    disp('Could not find eyes');
+    leftEyeCoord = mouthCoord - [60 120];
+    rightEyeCoord = mouthCoord - [-60 120];
+else % Check pair by pair for the lowest angle to mouthNormal
+    lowestAngle = 10000;
+    lowestAngleIndex = -1;
+    
+    for i = 1:size(pleAngle,2)
+        tmpLeftEyeAngle = pleAngle(i);
+        tmpRightEyeAngle = preAngle(i);
+        
+        if min(tmpLeftEyeAngle,tmpRightEyeAngle) < lowestAngle
+            lowestAngle = min(tmpLeftEyeAngle,tmpRightEyeAngle);
+            lowestAngleIndex = i;
+        end
+    end
+    pleAngle(lowestAngleIndex)
+    preAngle(lowestAngleIndex)
+    
+    leftEyeCoord = ple(lowestAngleIndex,:);
+    rightEyeCoord = pre(lowestAngleIndex,:);
+end
+
 
 subplot(1,2,1);
-imshow(IM);
-hold on;
-plot(mouthCoord(1), mouthCoord(2), 'x');
-plot(ple(1), ple(2), 'o');
-plot(pre(1), pre(2), 'o');
-subplot(1,2,2);
 imshow(eyeMapMouthFix);
 hold on;
 plot(mouthCoord(1), mouthCoord(2), 'x');
+plot(mouthCoord(1), mouthCoord(2), '*');
+plot(leftEyeCoord(1), leftEyeCoord(2), '*');
+plot(rightEyeCoord(1), rightEyeCoord(2), '*');
+subplot(1,2,2);
+imshow(IM);
+hold on;
+plot(mouthCoord(1), mouthCoord(2), '*');
+plot(leftEyeCoord(1), leftEyeCoord(2), '*');
+plot(rightEyeCoord(1), rightEyeCoord(2), '*');
+
 
 
 %%

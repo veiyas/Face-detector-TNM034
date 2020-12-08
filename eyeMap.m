@@ -1,5 +1,5 @@
 function [eyeMap] = eyeMap(img)
-% Old stuff below
+% Return binary image
 YCbCr = rgb2ycbcr(img);
 faceMask = getFaceMask(img);
 
