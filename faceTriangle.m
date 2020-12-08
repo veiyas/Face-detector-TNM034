@@ -1,108 +1,92 @@
-function[leftEye, rightEye, mouthPos] = faceTriangle(eyeMask, mouthMask)
+function[leftEyeCoord, rightEyeCoord, mouthCoord] = faceTriangle(img)
 %Get face triangle by looking at potential eyes and mouth and combining
 %them.
 
-eyeThresh = 220;
-mouthThresh = 200;
+gwIM = grayworldcorrection(img);
 
-mouthMask = imadjust(mouthMask,stretchlim(mouthMask),[]);
-mouthMask = uint8(rescale(mouthMask,0,255));
+% Get image size
+[imgHeight, imgWidth] = size(gwIM);
 
-eyeMask = uint8(face_threshold(eyeMask, eyeThresh));
-eyeMask = logical(eyeMask);
-mouthMask = uint8(face_threshold(mouthMask, mouthThresh));
+% Get mouth map and mouth coords
+mouthmap = mouthMap(img);
+mouthCoord = getMouthCoord(mouthmap);
 
-%Get all potential eye candidates
-eyeStats = regionprops('table',eyeMask, 'Centroid', 'BoundingBox');
-%Store all centroids in a vector
-eyeCentroids = cat(1,eyeStats.Centroid); 
+eyeMapBinMorphed = eyeMap(img);
+
+% Remove all data below the mouth
+eyeMapMouthFix = eyeMapBinMorphed;
+eyeMapMouthFix(round(mouthCoord(2))-30:imgHeight, :) = 0;
+
+% Get all potential eye candidates
+eyeStats = regionprops('table', eyeMapMouthFix, 'Centroid', 'BoundingBox', 'Area');
+% Store all centroids in a vector
+eyeCentroids = cat(1,eyeStats.Centroid);
+eyeAreas = cat(1, eyeStats.Area);
 eyesDetected = size(eyeCentroids);
 
-%Get all potential mouth candidates
-mouthStats = regionprops('table', mouthMask, 'centroid', 'BoundingBox');
-mouthCentroids = cat(1, mouthStats.Centroid);
-mouthsDetected = size(mouthCentroids);
+% Remove all eyes that does not fulfill certain attributes
+ple = []; % Potential left eyes
+pleArea = []; % Potenatial left eye areas
+l = 1; % Left eye counter
+pre = []; % Potential right eyes
+preArea = []; % Potenatial right eye areas
+r = 1; % Right eye counter
 
-%Get image size
-[imgHeight, imgWidth] = size(eyeMask);
+heightDiffTolerance = 50;
+areaDiffTolerance = 300;
+normDiffTolerance = 10;
 
-%Filter the mouth candidates
-mouths = [];
-k = 1;
-for i=1:mouthsDetected
-    %The mouth should be wider than its height
-    if(mouthStats.BoundingBox(i,3) > mouthStats.BoundingBox(i,4))
-        %The mouth should not be in the upper part of the image
-        %Maybe even bottom half?
-        if(mouthCentroids(i,2) > imgHeight/2)
-            mouths(k,:) = mouthCentroids(i,:);
-            k = k+1;
+% Filter out candidates that are:
+%   Not on correct side of mouth
+%   Too far apart vertically
+%   Not in similar size
+%   Vector to mouth should be roughly same length
+for i = 1:eyesDetected-1
+    for j = i+1:eyesDetected
+        tmpEyeArea1 = eyeAreas(i);
+        tmpEyeArea2 = eyeAreas(j);
+        
+        tmpEyeMtrx = [eyeCentroids(i,:); eyeCentroids(j,:)];
+        
+        [~,leftEyeIndex] = min(tmpEyeMtrx, [], 1);
+        [~,rightEyeIndex] = max(tmpEyeMtrx, [], 1);
+        
+        tmpLeftEye = tmpEyeMtrx(leftEyeIndex(1),:);
+        tmpRightEye = tmpEyeMtrx(rightEyeIndex(1),:);
+        
+        leftEyeMouthNorm = norm(mouthCoord - tmpLeftEye);
+        rightEyeMouthNorm = norm(mouthCoord - tmpRightEye);
+        
+        % Filters
+        correctSides = tmpLeftEye(1) < mouthCoord(1) && mouthCoord(1) < tmpRightEye(1);
+        belowMouth = tmpLeftEye(2) < mouthCoord(2) && tmpRightEye(2) < mouthCoord(2);
+        smallVertDiff = abs(tmpLeftEye(1,2) - tmpRightEye(1,2)) < heightDiffTolerance;
+        smallAreaDiff = abs(tmpEyeArea1 - tmpEyeArea2) < areaDiffTolerance;
+        smallMouthNormDiff = abs(leftEyeMouthNorm - rightEyeMouthNorm) < normDiffTolerance;
+        
+        if correctSides && belowMouth && smallVertDiff && smallMouthNormDiff
+            ple(l,:) = tmpLeftEye;
+            pleAreas(l) = tmpEyeArea1;
+            l = l+1;
+            pre(r,:) = tmpRightEye;
+            preAreas(r) = tmpEyeArea2;
+            r = r+1;
         end
     end
 end
-
-%Remove all eyes that does not fulfill certain attributes
-ple = []; %Potential left eyes
-l = 1; %Left eye counter
-pre = []; %Potential right eyes
-r = 1; %Right eye counter
-
-combo = []; %Stores each possible eye+mouth combo
-
-%This solution only works if we find ONLY 1 MOUTH.
-for i=1:size(mouths,1)
-    mouth = mouths(i,:);
-    for j=1:eyesDetected
-        eye = eyeCentroids(j,:);
-        %Must be above mouth and within resonable distance. 200 is just empirical
-        if(eye(2) > mouth(2) && abs(eye(2)-mouth(2)) < 200 )
-            %if left side of mouth and within resonable distance.
-            if(eye(1) < mouth(1) && abs(eye(1)-mouth(1)) < 75)
-                ple(l,:) = eye;
-                l = l+1;
-            %if instead right side of mouth and within resonable distance.  
-            elseif (eye(1) > mouth(1) && abs(eye(1)-mouth(1)) < 75)
-                pre(r,:) = eye;
-                r = r+1;
-            end            
-        end
-    end
+% If we only have 1 candidate left its probably correct
+% Else if choose the largest area ones
+if size(ple,1) == 1 && size(pre,1) == 1
+    leftEyeCoord = ple;
+    rightEyeCoord = pre;
+else 
+    [~, maxAreaIndexLeft] = max(pleAreas);
+    [~, maxAreaIndexRight] = max(preAreas);
     
-    %Choose the eye pair with the least y-coord difference
-    bestPair = [];
-    yDiff = 1000;
-    for j=1:l
-        for k=1:r
-            if(size(ple,1) > 0 && size(pre,1) > 0)
-                if(abs(ple(j,2) - pre(k,2)) < yDiff)
-                    bestPair = cat(2,ple(j),pre(k));
-                end
-            end
-        end
-    end
-    combo(i,:) = cat(2,mouth,bestPair);    
+    leftEyeCoord = ple(maxAreaIndexLeft,:);
+    rightEyeCoord = pre(maxAreaIndexRight,:);
 end
-
-%Somehow choose the best potential combo and return eyes and mouth
-
-%temporary solution. Just pick the first one.
-if(size(combo,1) > 0)
-    mouthPos = combo(1,1:2);
-    leftEye = combo(1,3:4);
-    rightEye = combo(1,5:6);
-else
-    leftEye = [0 0];
-    rightEye = [0 0];
-    mouthPos = [0 0];
 end
-
-
-
-
-
-
-
-
 
 
 
