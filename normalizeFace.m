@@ -17,6 +17,7 @@ fixedMouth = [150 300];
 fixedPositions = [fixedLeftEye; fixedRightEye; fixedMouth];
 
 %image = grayworldcorrection(image);
+%image = whitePatch(image);
 
 transformation = fitgeotrans([leftEye; rightEye; mouth], fixedPositions, 'similarity');
 normalizedImage = imwarp(image, transformation,'OutputView',imref2d(imageSize));

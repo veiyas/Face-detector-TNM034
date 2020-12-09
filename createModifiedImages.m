@@ -25,8 +25,8 @@ end
 % TODO Modify tone values
 
 %%
-%modifiedImages = [rotatedImages scaledImages];
-modifiedImages = [rotatedImages]; % TODO Use all kinds of modifications
+modifiedImages = [rotatedImages scaledImages];
+%modifiedImages = [rotatedImages]; % TODO Use all kinds of modifications
 
 % TODO Mix different modifications
 
