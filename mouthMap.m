@@ -14,6 +14,7 @@ eta = 0.95 * (sum(crSquared, 'all')/numPixels) / (sum(crOverCb, 'all')/numPixels
 mouthMap = crSquared .* (crSquared - eta * crOverCb).^2;
 
 % New stuff below
+
 faceMask = getFaceMask(grayworldcorrection(img));
 % These things work pretty good as long as the face mask is decent
 % The face mask isn't decent for 4 images in DB2, otherwise it works well

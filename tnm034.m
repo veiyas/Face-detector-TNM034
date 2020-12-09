@@ -17,11 +17,12 @@ threshold = 10;
 load DB.mat
 
 % Should no detected faces be handled?
-[doesFaceExist, normalizedImg] = normalizeFace(im);
-if doesFaceExist == false
-    id = 0;
-    return
-end
+% [doesFaceExist, normalizedImg] = normalizeFace(im);
+normalizedImg = normalizeFace(im);
+% if doesFaceExist == false
+%     id = 0;
+%     return
+% end
 normalizedImg = im2double(normalizedImg);
 
 imageVector = normalizedImg(:);

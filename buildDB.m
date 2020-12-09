@@ -5,11 +5,11 @@ function DB = buildDB(images, dimensions)
 numImages = length(images);
 normalizedImages = cell(1, numImages);
 for k = 1:numImages
-    [doesFaceExist, normalizedFace] = normalizeFace(images{k});
+    [normalizedFace] = normalizeFace(images{k});
     
-    if doesFaceExist == false
-        error('failed to find face in training image');
-    end
+%     if doesFaceExist == false
+%         error('failed to find face in training image');
+%     end
     
     normalizedImages{k} = im2double(normalizedFace);
 end

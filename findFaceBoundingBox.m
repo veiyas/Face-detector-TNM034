@@ -20,9 +20,9 @@ nTop95vals = sum(top95binIM(:) == 1);
 
 totPixels = imSize(1)*imSize(2);
 correctionTolerance = 0.3; % How much of image needs to be bright to corrected
-if (nTop95vals/totPixels) < correctionTolerance
-    gwIM = IM;
-end
+% if (nTop95vals/totPixels) < correctionTolerance
+%     gwIM = IM;
+% end
 
 % Construct skin color boundary in YCbCr space
 % Not used atm, can perhaps use the elliptical model instead
@@ -40,27 +40,7 @@ Kh = 188;
 WCb = 46.97;
 WCr = 38.76;
 
-NLYCbCr = zeros(imSize(1), imSize(2), imSize(3));
-NLYCbCr = uint8(NLYCbCr);
-NLYCbCr(:,:,1) = YCbCr(:,:,1);
-for i = 1:imSize(1)
-    for j = 1:imSize(2)
-        Y = YCbCr(i,j,1);
-        
-        if Y < Kl || Kh < Y
-            [CbC, CrC] = Ci_centers(Y); % Centers
-            [CbCK, CrCK] = Ci_centers(Kh); % Centers with Kh as input
-            [CbW, CrW] = Ci_weights(Y); % Weights
-            NLCb = (Y - CbC)*(WCb / CbW) + CbCK;
-            NLCr = (Y - CrC)*(WCr / CrW) + CrCK;
-            NLYCbCr(i,j,2) = uint8(NLCb);
-            NLYCbCr(i,j,3) = uint8(NLCr);
-        else
-            NLYCbCr(i,j,2) = YCbCr(i,j,2);
-            NLYCbCr(i,j,3) = YCbCr(i,j,3);
-        end
-    end
-end
+NLYCbCr = nlYCbCr(YCbCr);
 
 % Elliptical skin tone boundary
 theta = 2.53;
