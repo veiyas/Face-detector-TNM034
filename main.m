@@ -1,39 +1,40 @@
 %% Build and save database
 clear
+clc
 format compact
 
-[images, numImages] = loadImages('DB1');
+disp('Building DB');
+[DB1Images, ~, ~] = loadImages('DB1');
 dimensions = 7; % The number of dimensions in face space
-DB = buildDB(images, dimensions);
+DB = buildDB(DB1Images, dimensions);
 
 save DB.mat DB
 
 %% Test tnm034(im)
 clc
 
+[DB1Images, DB1NumImages, DB1CorrectIds] = loadImages('DB1');
+[DB2Images, DB2NumImages, DB2CorrectIds] = loadImages('DB2');
+[DB2ImagesNoBlur, DB2NumImagesNoBlur, DB2CorrectIdsNoBlur] = loadImages('DB2_EXCLUDING_BLUR');
+
 disp('Results with unmodified training images (DB1)');
-testWithNonmodifiedImages(images, numImages)
+testWithNonmodifiedImages(DB1Images, DB1NumImages, DB1CorrectIds);
 disp(' ');
 
-disp('Results with modified training images (DB1)');
-testWithModifiedImages(images, numImages);
+% disp('Results with modified training images (DB1)');
+% testWithModifiedImages(DB1Images, DB1NumImages, DB1CorrectIds);
+% disp(' ');
+
+disp('Results with unmodified DB2 images EXCLUDING BLURRY ONES');
+testWithNonmodifiedImages(DB2ImagesNoBlur, DB2NumImagesNoBlur, DB2CorrectIdsNoBlur);
 disp(' ');
 
-
-% DOES NOT WORK RIGHT NOW, eyeCoords in get_eye_m... gets empty,
-% not sure why atm
 % Test unknown faces
 disp('Results with unknown faces (DB0)');
-jpegFilesDB0 = dir('data/DB0/*.jpg'); 
-numFilesDB0 = length(jpegFilesDB0);
+[DB0Images, DB0NumFiles] = loadImages('DB0');
 numOfUnknownIdentifiedFaces = 0;
-for k = 1:numFilesDB0
-    image = imread(['data/DB0/' jpegFilesDB0(k).name]);
-%     if k == 4 || k == 1 % OOOOOBBS DETTA ÄR BARA FÖR ATT UNDVIKA KRASCH
-%         continue;
-%     end
-    
-    if tnm034(image) ~= 0
+for k = 1:DB0NumFiles
+    if tnm034(DB0Images{k}) ~= 0
         numOfUnknownIdentifiedFaces = numOfUnknownIdentifiedFaces + 1;
     end
 end
@@ -41,24 +42,26 @@ fprintf('\tNumber of unknown faces identified:\t%i\n', numOfUnknownIdentifiedFac
 disp(' ');
 %% Local functions
 
-% Dont necessarily work for anything other than DB1
-function testWithNonmodifiedImages(images, numImages)
-    knownFacesIdentificationResults = zeros(numImages,1);
-    
+function testWithNonmodifiedImages(images, numImages, correctIds)
+    numCorrIds = 0;
     for i = 1:numImages
-        knownFacesIdentificationResults(i) = tnm034(images{i});
+        if tnm034(images{i}) == correctIds(i)
+            numCorrIds = numCorrIds + 1;
+        else
+            if tnm034(images{i}) == 0
+                disp('hdjfklsjä');
+            end
+%             tnm034(images{i})
+%             correctIds(i)
+%             disp(' ');
+        end
     end
 
-    knownFacesCorrectResults = (1:numImages)'; % Not the most robust...
-    numCorrectIds = nnz(...
-        knownFacesIdentificationResults == knownFacesCorrectResults);
-
-    correctToTotalRatio = numCorrectIds / numImages;
+    correctToTotalRatio = numCorrIds / numImages;
     fprintf('\tCorrect to total ratio:\t%f\n', correctToTotalRatio);
 end
 
-% Dont necessarily work for anything other than DB1
-function testWithModifiedImages(images, numImages)
+function testWithModifiedImages(images, numImages, correctIds)
     totNumImages = 0;
     numCorrIds = 0;
     for i = 1:numImages
@@ -67,7 +70,7 @@ function testWithModifiedImages(images, numImages)
         numModImages = length(modifiedImages);
         totNumImages = totNumImages + numModImages;
         for k = 1:numModImages
-            if tnm034(modifiedImages{k}) == i % correct
+            if tnm034(modifiedImages{k}) == correctIds(i) % correct
                 numCorrIds = numCorrIds + 1;
             end
         end
