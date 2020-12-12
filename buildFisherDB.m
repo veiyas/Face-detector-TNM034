@@ -30,8 +30,7 @@ PCAEigVectors = PCAEigVectors(:,1:numImages-c);
 
 % Get eigenvectors of the covariance matrix
 Wpca = A * PCAEigVectors;
-
-% Should something be normalized here?
+Wpca = Wpca ./ sqrt(sum(Wpca.^2,1));
 
 PCAFaceCoords = transpose(Wpca) * A;
 

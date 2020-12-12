@@ -1,4 +1,4 @@
-function id = tnm034(im)
+function id = tnm034(im, DB)
 %
 % im: Image of unknown face, RGB-image in uint8 format in the
 % range [0,255]
@@ -14,7 +14,10 @@ function id = tnm034(im)
 threshold = 1000;
 
 % DB.mat should be precomputed to avoid extra caclulations
-load DB.mat
+% And also preferably passed in to not have to load all the time
+if ~exist('DB','var')
+    load DB.mat
+end
 
 % Should no detected faces be handled?
 % [doesFaceExist, normalizedImg] = normalizeFace(im);
