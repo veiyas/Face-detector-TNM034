@@ -15,11 +15,10 @@ buildFisherDB(rank);
 %% Test tnm034(im)
 clc
 load DB.mat
-profile on
+%profile on
 
 [DB1Images, DB1NumImages, DB1CorrectIds] = loadImages('DB1');
 [DB2Images, DB2NumImages, DB2CorrectIds] = loadImages('DB2');
-[DB2ImagesNoBlur, DB2NumImagesNoBlur, DB2CorrectIdsNoBlur] = loadImages('DB2_EXCLUDING_BLUR');
 
 disp('Results with unmodified training images (DB1)');
 testWithNonmodifiedImages(DB1Images, DB1NumImages, DB1CorrectIds, DB);
@@ -37,10 +36,6 @@ disp('Results with modified DB2 images');
 testWithModifiedImages(DB2Images, DB2NumImages, DB2CorrectIds, DB);
 disp(' ');
 
-% disp('Results with unmodified DB2 images EXCLUDING BLURRY ONES');
-% testWithNonmodifiedImages(DB2ImagesNoBlur, DB2NumImagesNoBlur, DB2CorrectIdsNoBlur);
-% disp(' ');
-
 % Test unknown faces
 disp('Results with unknown faces (DB0)');
 [DB0Images, DB0NumFiles] = loadImages('DB0');
@@ -53,10 +48,11 @@ end
 fprintf('\tNumber of unknown faces identified:\t%i\n', numOfUnknownIdentifiedFaces);
 disp(' ');
 
-profsave
+%profsave
 
 %% Test specific parts of DB2
 clear
+load DB.mat
 DBpart = ['DB2_bl'; 'DB2_cl'; 'DB2_ex'; 'DB2_il'];
 
 disp(' ')

@@ -30,7 +30,7 @@ PCAEigVectors = PCAEigVectors(:,1:numImages-c);
 
 % Get eigenvectors of the covariance matrix
 Wpca = A * PCAEigVectors;
-Wpca = Wpca ./ sqrt(sum(Wpca.^2,1));
+%Wpca = Wpca ./ sqrt(sum(Wpca.^2,1));
 
 PCAFaceCoords = transpose(Wpca) * A;
 
@@ -82,6 +82,7 @@ Wfld = Wfld(:, idx);
 Wfld = Wfld(:, 1:dimensions);
 
 Wopt = transpose(Wfld' * Wpca');
+Wopt = Wopt ./ sqrt(sum(Wopt.^2,1));
 
 %% Find coordinates and save DB
 
