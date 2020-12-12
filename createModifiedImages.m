@@ -22,13 +22,19 @@ for i = 1:length(scales)
     scaledImages{i} = imresize(image, scales(i), 'bicubic');
 end
 
-% TODO Modify tone values
+%% Generate tone adjusted images
+toneVals = -30:10:30; % In percent
+toneImages = cell(1, length(toneVals));
+for i = 1:length(toneVals)
+    ycbcrImg = rgb2ycbcr(image);
+    ycbcrImg(:,:,1) = ycbcrImg(:,:,1) * (1 + toneVals(i) * 0.01);
+    toneImages{i} = ycbcr2rgb(ycbcrImg);
+end
 
+%% TODO Mix different modifications
 %%
-modifiedImages = [rotatedImages scaledImages];
+modifiedImages = [rotatedImages scaledImages toneImages];
 %modifiedImages = [rotatedImages]; % TODO Use all kinds of modifications
-
-% TODO Mix different modifications
 
 end
 
