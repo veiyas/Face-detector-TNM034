@@ -3,12 +3,14 @@ clear
 clc
 format compact
 
-disp('Building DB');
-[DB1Images, ~, ~] = loadImages('DB1');
-dimensions = 7; % The number of dimensions in face space
-DB = buildDB(DB1Images, dimensions);
-
-save DB.mat DB
+% disp('Building DB');
+% [DB1Images, ~, ~] = loadImages('DB1');
+% dimensions = 7; % The number of dimensions in face space
+% DB = buildDB(DB1Images, dimensions);
+% 
+% save DB.mat DB
+rank = 15;
+buildFisherDB(rank);
 
 %% Test tnm034(im)
 clc
@@ -21,12 +23,16 @@ disp('Results with unmodified training images (DB1)');
 testWithNonmodifiedImages(DB1Images, DB1NumImages, DB1CorrectIds);
 disp(' ');
 
-% disp('Results with modified training images (DB1)');
-% testWithModifiedImages(DB1Images, DB1NumImages, DB1CorrectIds);
-% disp(' ');
+disp('Results with modified training images (DB1)');
+testWithModifiedImages(DB1Images, DB1NumImages, DB1CorrectIds);
+disp(' ');
 
 disp('Results with unmodified DB2 images');
 testWithNonmodifiedImages(DB2Images, DB2NumImages, DB2CorrectIds);
+disp(' ');
+
+disp('Results with modified DB2 images');
+testWithModifiedImages(DB2Images, DB2NumImages, DB2CorrectIds);
 disp(' ');
 
 % disp('Results with unmodified DB2 images EXCLUDING BLURRY ONES');

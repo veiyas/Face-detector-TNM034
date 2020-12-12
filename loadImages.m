@@ -9,6 +9,11 @@ elseif strcmp(dataSet, 'DB0')
 elseif strcmp(dataSet, 'DB2')
     jpegFiles = dir('data/DB2/*.jpg');
     
+elseif strcmp(dataSet, 'DB1_AND_DB2')
+    DB1Files = dir('data/DB1/*.jpg');
+    DB2Files = dir('data/DB2/*.jpg');
+    jpegFiles = [DB1Files; DB2Files];
+    
 % Parts of DB2 below
 elseif strcmp(dataSet, 'DB2_bl')
     jpegFiles = dir('data/DB2/bl*.jpg');

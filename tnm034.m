@@ -11,7 +11,7 @@ function id = tnm034(im)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % threshold = 1e-10;
-threshold = 25;
+threshold = 1000;
 
 % DB.mat should be precomputed to avoid extra caclulations
 load DB.mat
