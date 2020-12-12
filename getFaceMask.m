@@ -23,12 +23,12 @@ posY = imgCb * -sin(theta) + imgCr * cos(theta);
 threshold = 2.0;
 faceMask = ( ((posX - ecx).^2 ./ a2 + (posY - ecy).^2 ./ b2) <= threshold);
 
-% morphological operations, closing, open, closing
+% morphological operations
 diskSize = 20;
 kernel = strel('disk', diskSize);
 faceMask = imclose(faceMask, kernel);
 
-diskSize = 4;
+diskSize = 8;
 kernel = strel('disk', diskSize);
 faceMask = imopen(faceMask, kernel);
 
