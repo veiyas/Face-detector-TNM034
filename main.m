@@ -72,10 +72,11 @@ function testWithNonmodifiedImages(images, numImages, correctIds, DB)
     numCorrIds = 0;
     numNoId = 0; % how many times no face is identified
     for i = 1:numImages
-        if tnm034(images{i}, DB) == correctIds(i)
+        classifiedAs = tnm034(images{i}, DB);
+        if classifiedAs == correctIds(i)
             numCorrIds = numCorrIds + 1;
         else
-            if tnm034(images{i}) == 0
+            if classifiedAs == 0
                 numNoId = numNoId + 1;
             end
 %                 subplot(121)
@@ -101,18 +102,26 @@ end
 function testWithModifiedImages(images, numImages, correctIds, DB)
     totNumImages = 0;
     numCorrIds = 0;
+    numNoId = 0; % how many times no face is identified
     for i = 1:numImages
         %i
         modifiedImages = createModifiedImages(images{i});
         numModImages = length(modifiedImages);
         totNumImages = totNumImages + numModImages;
         for k = 1:numModImages
-            if tnm034(modifiedImages{k}, DB) == correctIds(i) % correct
+            classifiedAs = tnm034(modifiedImages{k}, DB);
+            if classifiedAs == correctIds(i) % correct
                 numCorrIds = numCorrIds + 1;
+            else
+                if classifiedAs == 0
+                    numNoId = numNoId + 1;
+                end
             end
         end
     end
 
+    fprintf('\tCorrect / total:\t%i / %i\n', numCorrIds, totNumImages);
+    fprintf('\tHow many faces was not recognized:\t%i\n', numNoId);
     correctToTotalRatio = numCorrIds / totNumImages;
     fprintf('\tCorrect to total ratio:\t%f\n', correctToTotalRatio);
 end
