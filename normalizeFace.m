@@ -16,7 +16,7 @@ fixedRightEye = [200 100];
 fixedMouth = [150 300];
 fixedPositions = [fixedLeftEye; fixedRightEye; fixedMouth];
 
-%image = grayworldcorrection(image);
+image = grayworldcorrection(image);
 %image = whitePatch(image);
 
 transformation = fitgeotrans([leftEye; rightEye; mouth], fixedPositions, 'similarity');
