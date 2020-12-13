@@ -28,7 +28,7 @@ diskSize = 20;
 kernel = strel('disk', diskSize);
 faceMask = imclose(faceMask, kernel);
 
-diskSize = 8;
+diskSize = 4;
 kernel = strel('disk', diskSize);
 faceMask = imopen(faceMask, kernel);
 
