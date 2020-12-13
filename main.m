@@ -36,7 +36,7 @@ disp('Results with modified DB2 images');
 testWithModifiedImages(DB2Images, DB2NumImages, DB2CorrectIds, DB);
 disp(' ');
 
-% Test unknown faces
+%% Test unknown faces
 disp('Results with unknown faces (DB0)');
 [DB0Images, DB0NumFiles] = loadImages('DB0');
 numOfUnknownIdentifiedFaces = 0;

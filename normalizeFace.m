@@ -26,5 +26,7 @@ normalizedImage = imwarp(image, transformation,'OutputView',imref2d(imageSize));
 
 % Use grayscale image for now, might use something else later
 normalizedImage = rgb2gray(normalizedImage);
+
+normalizedImage = histeq(normalizedImage);
 end
 
