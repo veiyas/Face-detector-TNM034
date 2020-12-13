@@ -28,6 +28,8 @@ toneImages = cell(1, length(toneVals));
 for i = 1:length(toneVals)
     ycbcrImg = rgb2ycbcr(image);
     ycbcrImg(:,:,1) = ycbcrImg(:,:,1) * (1 + toneVals(i) * 0.01);
+    mask = ycbcrImg(:,:,1) > 255;
+    ycbcrImg(mask,1) = 255;
     toneImages{i} = ycbcr2rgb(ycbcrImg);
 end
 
