@@ -100,6 +100,7 @@ if size(ple,1) == 1 && size(pre,1) == 1
     leftEyeCoord = ple;
     rightEyeCoord = pre;
 elseif size(ple,1) == 0 && size(pre,1) == 0 % Guesstimated triangle, is this allowed?
+    mouthCoord = [428 382];
     leftEyeCoord = mouthCoord - [60 120];
     rightEyeCoord = mouthCoord - [-60 120];
 else % Check pair by pair for the lowest angle to mouthNormal
@@ -119,6 +120,7 @@ else % Check pair by pair for the lowest angle to mouthNormal
     leftEyeCoord = ple(lowestAngleIndex,:);
     rightEyeCoord = pre(lowestAngleIndex,:);
 end
+[leftEyeCoord, rightEyeCoord] = findPupils(img, leftEyeCoord, rightEyeCoord);
 end
 
 

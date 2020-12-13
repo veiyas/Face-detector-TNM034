@@ -1,6 +1,8 @@
 function [normalized_color_img] = colorCorrection(rgb_img)
 %Computes a grey world normalization version of the rgb image
 
+
+
 redC = rgb_img(:,:,1);
 greenC = rgb_img(:,:,2);
 blueC = rgb_img(:,:,3);
