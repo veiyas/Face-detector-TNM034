@@ -32,7 +32,7 @@ for i = 1:mouthsDetected
 end
 
 if currArea == -1 % If no mouth candidate was found we use placeholder
-    disp('Could not find mouth');
+    %disp('Could not find mouth'); % No output when submitting
     mouthCoord = [441.5 415.6]; 
 end
 
