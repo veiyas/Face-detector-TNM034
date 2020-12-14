@@ -11,7 +11,7 @@ ecx = 1.6;
 ecy = 2.41;
 
 a2 = 25.39 * 25.39;
-b2 = 14.03*14.03;
+b2 = 14.03 * 14.03;
 
 imgCb(:,:) = double(nl_YCbCr(:,:,2)) - cx;
 imgCr(:,:) = double(nl_YCbCr(:,:,3)) - cy;

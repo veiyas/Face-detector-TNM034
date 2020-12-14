@@ -5,7 +5,7 @@ Cr = YCbCr(:,:,3);
 
 % Constants attained from Face Detection in Color Images
 Kl = 125;
-Kh = 188; 
+Kh = 188;
 
 % Matrixes representing low/high
 Yl = uint8(Y < Kl);

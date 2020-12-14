@@ -50,5 +50,6 @@ faceSpaceCoords = transpose(faceSpaceBasis) * faceDiff;
 DB.meanFace = meanFace;
 DB.faceSpaceBasis = faceSpaceBasis;
 DB.faceSpaceCoords = faceSpaceCoords;
+
 end
 

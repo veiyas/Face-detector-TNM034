@@ -5,6 +5,8 @@ imgYcbcr = rgb2ycbcr(img);
 Cb = imgYcbcr(:,:,2);
 Cr = imgYcbcr(:,:,3);
 
+faceMask = getFaceMask(grayworldcorrection(img));
+
 numPixels = size(imgYcbcr, 1) * size(imgYcbcr, 2);
 
 crSquared = rescale(double(Cr).^2, 0, 1);
@@ -15,7 +17,7 @@ mouthMap = crSquared .* (crSquared - eta * crOverCb).^2;
 
 % New stuff below
 
-faceMask = getFaceMask(grayworldcorrection(img));
+
 % These things work pretty good as long as the face mask is decent
 % The face mask isn't decent for 4 images in DB2, otherwise it works well
 

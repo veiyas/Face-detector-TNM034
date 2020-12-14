@@ -7,7 +7,7 @@ yMax = 235;
 CbCenterLow = 108 + (Kl - Y) * 10 / (Kl - yMin);
 CbCenterHigh = 108 + (Y - Kh) * 10 / (yMax - Kh);
 
-CrCenterLow = 154 - (Kl - Y) * 22 / (Kl - yMin);
+CrCenterLow = 154 - (Kl - Y) * 10 / (Kl - yMin);
 CrCenterHigh = 154 + (Y - Kh) * 22 / (yMax - Kh);
 
 Cb_center = CbCenterLow .* uint8(Y < Kl) + CbCenterHigh .* uint8(Kh < Y);

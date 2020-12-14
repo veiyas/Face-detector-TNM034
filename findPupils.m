@@ -48,7 +48,6 @@ R = 13;
 leftEyeMask = bwdist(leftEyeMask, 'quasi-euclidean') <= R;
 rightEyeMask = bwdist(rightEyeMask, 'quasi-euclidean') <= R;
 
-
 leftEyeMaskedIm = im2double(hueCombined .* leftEyeMask);
 rightEyeMaskedIm = im2double(hueCombined .* rightEyeMask);
 
