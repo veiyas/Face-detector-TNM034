@@ -120,7 +120,7 @@ else % Check pair by pair for the lowest angle to mouthNormal
     leftEyeCoord = ple(lowestAngleIndex,:);
     rightEyeCoord = pre(lowestAngleIndex,:);
 end
-%[leftEyeCoord, rightEyeCoord] = findPupils(img, leftEyeCoord, rightEyeCoord);
+[leftEyeCoord, rightEyeCoord] = findPupils(img, leftEyeCoord, rightEyeCoord);
 end
 
 
